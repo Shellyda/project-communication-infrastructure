@@ -1,4 +1,4 @@
-## Project First step: UDP File Transfer 
+## Project First Step: UDP File Transfer 
 
 This project first step consists of a client and server that transfer files between each other using the UDP protocol. The client sends a file to the server, which then sends it back to the client.
 
