@@ -20,7 +20,7 @@ This project first step consists of a client and server that transfer files betw
    ```
 
 #### 2. Run the Server
-   In a terminal, navigate to the project directory and run the server script:
+   In a terminal, navigate to the project first step folder directory and run the server script:
 
    ```python
    python3 server.py
