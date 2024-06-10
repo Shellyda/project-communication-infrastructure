@@ -27,12 +27,12 @@ class UDPServer:
                 file = open(file_name, 'wb') # Open the file in binary mode
 
                 datagram_count = 0
-                stillHaveDataToGet = True
-                while stillHaveDataToGet: # While the datagram is not empty
+                still_have_data_to_get = True
+                while still_have_data_to_get: # While the datagram is not empty
                     datagram, origin_address = self.server_socket.recvfrom(MAX_BUFF_SIZE)
                     bytes_from_message += datagram
                     datagram_count += 1
-                    stillHaveDataToGet = datagram != b""
+                    still_have_data_to_get = datagram != b""
 
                 print(f"📊 Received {datagram_count} datagrams from HOST {origin_address[0]} with port {origin_address[1]}!")
                 print(f"🆕 Writing {len(bytes_from_message)} bytes to '{file_name}'...")
@@ -54,11 +54,11 @@ class UDPServer:
 
         self.server_socket.sendto(message, target_address) # Send the file name to client
 
-        stillHaveDataToSend = True
-        while stillHaveDataToSend:
+        still_have_data_to_send = True
+        while still_have_data_to_send:
             datagram = file.read(MAX_BUFF_SIZE) # Read the file in chunks of 1024 bytes
             self.server_socket.sendto(datagram, target_address)
-            stillHaveDataToSend = len(datagram) > 0
+            still_have_data_to_send = len(datagram) > 0
 
         self.server_socket.sendto(b"", target_address) # Send an empty message to signal the end of the file
 
