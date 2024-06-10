@@ -37,7 +37,7 @@ This project first step consists of a client and server that transfer files betw
    ```
 
 #### 3. Run the Client
-  Open another terminal, navigate to the project directory, and run the client script:
+  Open another terminal, navigate to the project first step folder directory, and run the client script:
 
    ```python
    python3 client.py
