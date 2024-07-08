@@ -129,7 +129,7 @@ class UDPServer:
                     self.send_packet(data, 1)
                 self.state = "wait_ack_1"
         
-        file.close() # Transmission ended and receiver received everything
+        file.close() # Transmission ended 
 
 def main():
     server = UDPServer()
