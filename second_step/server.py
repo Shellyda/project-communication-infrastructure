@@ -43,7 +43,20 @@ class UDPServer:
                     else:
                         self.action = f"resend_packet_seq_{sequence_number}" # If the ack has the wrong sequence, resend packet 
 
+    def waiting_for_call(self, sequence_number):
+        print(f"Waiting for a call with sequence_number = {sequence_number}")
+        self.action = f"send_packet_seq_{sequence_number}" # Send sequence packet 
 
+    def send_packet_sequence(self, sequence_number):
+        data = file.read(MAX_BUFF_SIZE)  # Read 1024 bytes from the file
+                if not data:
+                    self.end_of_packet = True
+                    self.send_packet(b'END', int(sequence_number))
+                else: # there are still packets to send
+                    self.send_packet(data, int(sequence_number))
+                self.state = f"wait_ack_{sequence_number}"
+
+    
     def send(self, message):
 
         self.end_of_packet = False
@@ -56,52 +69,35 @@ class UDPServer:
         self.state = "wait_ack_0"
 
         while not self.end_of_packet: # Main loop of the sender's finite state machine
-
+            # Waiting calls
             if self.state == "wait_call_0":
                 # State of waiting to send sequence packet 0
-                print("Waiting for a call with sequence_number = 0")
-                self.action = "send_packet_seq_0" # Send sequence packet 0
-
+                self.waiting_for_call('0')
+            elif self.state == "wait_call_1":
+                # State of waiting to send sequence packet 1
+                self.waiting_for_call('1')
             elif self.state == "wait_ack_0":
                 # State of waiting for Ack 0 after packet 0 has been sent
                 self.waiting_for_ack('0')
-                
-            elif self.state == "wait_call_1":
-                # State of waiting to send sequence packet 1
-                print("Waiting for a call with sequence_number = 1")
-                self.action = "send_packet_seq_1" # Send sequence packet 1
-
             elif self.state == "wait_ack_1":
                 # State of waiting for Ack 1 after packet 1 has been sent
                 self.waiting_for_ack('1')
 
+            # Packets sequences senders
             if self.action == "send_packet_seq_0":
-                data = file.read(MAX_BUFF_SIZE)  # Read 1024 bytes from the file
-                if not data:
-                    self.end_of_packet = True
-                    self.send_packet(b'END', 0)
-                else:
-                    self.send_packet(data, 0)
+               self.send_packet_sequence('0')
+            elif self.action == "send_packet_seq_1":
+               send_packet_sequence('1')
 
-                self.state = "wait_ack_0"
-
+            # Stop timer
             elif self.action == "stop_timer_0":
                 self.server_socket.settimeout(TIMEOUT) # Reset timer
                 self.state = "wait_call_1"
-
-            elif self.action == "send_packet_seq_1":
-                data = file.read(MAX_BUFF_SIZE)  # Read 1024 bytes from the file
-                if not data:
-                    self.end_of_packet = True
-                    self.send_packet(b'END', 1)
-                else: # there are still packets to send
-                    self.send_packet(data, 1)
-                self.state = "wait_ack_1"
-
             elif self.action == "stop_timer_1":
                 self.server_socket.settimeout(TIMEOUT) # Reset timer
                 self.state = "wait_call_0"
 
+            # Resend packet
             elif self.action == "resend_packet_seq_0":
                 print('\x1b[1;33;40m' + 'Resending Packet (sequence_number=0)' + '\x1b[0m')
 
@@ -114,6 +110,7 @@ class UDPServer:
 
             elif self.action == "resend_packet_seq_1":
                 print('\x1b[1;33;40m' + 'Resending Packet (sequence_number=1)' + '\x1b[0m')
+                
                 if not data:
                     self.end_of_packet = True
                     self.send_packet(b'END', 1)
