@@ -126,7 +126,7 @@ def main():
     print(f"🌐 Server is running on {bind_address[0]} with PORT {bind_address[1]}!")
     print(f"\n---------------------------------\n")
 
-    input_file = input("💬 Enter the file name to send to server, you can choose 'image.png' or 'text.txt': ")
+    input_file = input("💬 Enter the file name to send to client, you can choose 'image.png' or 'text.txt': ")
     message = input_file
 
     server.send(message)
