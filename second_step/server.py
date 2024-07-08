@@ -28,7 +28,7 @@ class UDPServer:
 
     def waiting_for_ack(self, sequence_number):
         # State of waiting for Ack, after packet has been sent
-                print("Waiting for an ACK = {sequence_number}")
+                print(f"Waiting for an ACK = {sequence_number}")
                 try:
                     acknowledgement_packet = self.server_socket.recv(MAX_BUFF_SIZE) # If an Ack packet arrives, receives the Ack
                 except skt.timeout:
@@ -59,6 +59,17 @@ class UDPServer:
     def stop_timer(self, new_current_call):
         self.server_socket.settimeout(TIMEOUT) # Reset timer
         self.state = f"wait_call_{new_current_call}"
+
+
+    def resend_packet_sequence(self, sequence_number, data):
+                print('\x1b[1;33;40m' + f'Resending Packet (sequence_number={sequence_number})' + '\x1b[0m')
+
+                if not data:
+                    self.end_of_packet = True
+                    self.send_packet(b'END', int(sequence_number))
+                else: # there are still packets to send
+                    self.send_packet(data, int(sequence_number))
+                self.state = f"wait_ack_{sequence_number}"
 
     
     def send(self, message):
@@ -102,24 +113,11 @@ class UDPServer:
 
             # Resend packet
             elif self.action == "resend_packet_seq_0":
-                print('\x1b[1;33;40m' + 'Resending Packet (sequence_number=0)' + '\x1b[0m')
-
-                if not data:
-                    self.end_of_packet = True
-                    self.send_packet(b'END', 0)
-                else: # there are still packets to send
-                    self.send_packet(data, 0)
-                self.state = "wait_ack_0"
+                self.resend_packet_sequence('0', data)
 
             elif self.action == "resend_packet_seq_1":
-                print('\x1b[1;33;40m' + 'Resending Packet (sequence_number=1)' + '\x1b[0m')
-                
-                if not data:
-                    self.end_of_packet = True
-                    self.send_packet(b'END', 1)
-                else: # there are still packets to send
-                    self.send_packet(data, 1)
-                self.state = "wait_ack_1"
+                self.resend_packet_sequence('1', data)
+
         
         file.close() # Transmission ended 
 
