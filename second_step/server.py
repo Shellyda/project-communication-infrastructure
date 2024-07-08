@@ -26,6 +26,24 @@ class UDPServer:
         else:
             print('\x1b[1;31;40m' + 'Packet lost' + '\x1b[0m')
 
+    def waiting_for_ack(self, sequence_number):
+        # State of waiting for Ack, after packet has been sent
+                print("Waiting for an ACK = {sequence_number}")
+                try:
+                    acknowledgement_packet = self.server_socket.recv(MAX_BUFF_SIZE) # If an Ack packet arrives, receives the Ack
+                except skt.timeout:
+                    print('\x1b[7;31;47m' + 'Transmitter Timeout' + '\x1b[0m')
+                    self.action = f"resend_packet_seq_{sequence_number}" # If a timeout occurs, resend sequence packet 
+                else:
+                    acknowledgement_packet = struct.unpack_from('i', acknowledgement_packet) # Decodes the ACK packet
+                    ack = acknowledgement_packet[0]             # Gets the ACK field of the packet
+                    if ack == int(sequence_number):
+                        print('\x1b[1;34;40m' + f'Ack {sequence_number} received' + '\x1b[0m')
+                        self.action = f"stop_timer_{sequence_number}" # If the ACK is sequence_number, reset the timer
+                    else:
+                        self.action = f"resend_packet_seq_{sequence_number}" # If the ack has the wrong sequence, resend packet 
+
+
     def send(self, message):
 
         self.end_of_packet = False
@@ -46,21 +64,8 @@ class UDPServer:
 
             elif self.state == "wait_ack_0":
                 # State of waiting for Ack 0 after packet 0 has been sent
-                print("Waiting for an ACK = 0")
-                try:
-                    acknowledgement_packet = self.server_socket.recv(MAX_BUFF_SIZE) # If an Ack packet arrives, receives the Ack
-                except skt.timeout:
-                    print('\x1b[7;31;47m' + 'Transmitter Timeout' + '\x1b[0m')
-                    self.action = "resend_packet_seq_0" # If a timeout occurs, resend sequence packet 0
-                else:
-                    acknowledgement_packet = struct.unpack_from('i', acknowledgement_packet) # Decodes the ACK packet
-                    ack = acknowledgement_packet[0]             # Gets the ACK field of the packet
-                    if ack == 0:
-                        print('\x1b[1;34;40m' + 'Ack 0 received' + '\x1b[0m')
-                        self.action = "stop_timer_0" # If the ACK is 0, reset the timer
-                    else:
-                        self.action = "resend_packet_seq_0" # If the ack has the wrong sequence, resend packet 0
-
+                self.waiting_for_ack('0')
+                
             elif self.state == "wait_call_1":
                 # State of waiting to send sequence packet 1
                 print("Waiting for a call with sequence_number = 1")
@@ -68,20 +73,7 @@ class UDPServer:
 
             elif self.state == "wait_ack_1":
                 # State of waiting for Ack 1 after packet 1 has been sent
-                print("Waiting for an ACK = 1")
-                try:
-                    acknowledgement_packet = self.server_socket.recv(MAX_BUFF_SIZE) # If an Ack packet arrives, receives the Ack
-                except skt.timeout:
-                    print('\x1b[7;31;47m' + 'Transmitter Timeout' + '\x1b[0m')
-                    self.action = "resend_packet_seq_1" # If a timeout occurs, resend sequence packet 1
-                else:
-                    acknowledgement_packet = struct.unpack_from('i', acknowledgement_packet) # Decodes the ACK packet
-                    ack = acknowledgement_packet[0]             # Gets the ACK field of the packet
-                    if ack == 1:
-                        self.action = "stop_timer_1" # If the ACK is 1, reset the timer
-                        print('\x1b[1;34;40m' + 'Ack 1 received' + '\x1b[0m')
-                    else:
-                        self.action = "resend_packet_seq_1" # If the ack has the wrong sequence, resend packet 1
+                self.waiting_for_ack('1')
 
             if self.action == "send_packet_seq_0":
                 data = file.read(MAX_BUFF_SIZE)  # Read 1024 bytes from the file
