@@ -37,9 +37,7 @@ class UDPServer:
 
         self.state = "wait_ack_0"
 
-        print("exit")
-
-        while not end_of_packet: # Main loop of the sender's finite state machine
+        while not self.end_of_packet: # Main loop of the sender's finite state machine
 
             if self.state == "wait_call_0":
                 # State of waiting to send sequence packet 0
