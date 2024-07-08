@@ -14,7 +14,7 @@ class UDPClient:
         self.state = ""
 
     def send_acknowledgement(self, ack, sequence_number, target_address):
-        print('\x1b[1;34;40m' + f'ACK = {sequence_number} sent' + '\x1b[0m')
+        print('\x1b[1;34;40m' + f'ACK {sequence_number} sent' + '\x1b[0m')
         data = struct.pack('i', ack)
         if randint(0, 9):  # Simulating 10% loss rate
             self.client_socket.sendto(data, target_address) # Sends the data to the destination

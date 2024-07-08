@@ -38,7 +38,7 @@ class UDPServer:
                     acknowledgement_packet = struct.unpack_from('i', acknowledgement_packet) # Decodes the ACK packet
                     ack = acknowledgement_packet[0]             # Gets the ACK field of the packet
                     if ack == int(sequence_number):
-                        print('\x1b[1;34;40m' + f'Ack {sequence_number} received' + '\x1b[0m')
+                        print('\x1b[1;34;40m' + f'ACK {sequence_number} received' + '\x1b[0m')
                         self.action = f"stop_timer_{sequence_number}" # If the ACK is sequence_number, reset the timer
                     else:
                         self.action = f"resend_packet_seq_{sequence_number}" # If the ack has the wrong sequence, resend packet 
