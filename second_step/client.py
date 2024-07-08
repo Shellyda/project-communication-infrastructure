@@ -3,7 +3,8 @@ import struct
 from random import *
 import env_props as env # Environment properties
 
-bind_address = env.RECEIVER_HOST
+bind_address = env.CLIENT_HOST
+
 MAX_BUFF_SIZE = env.MAX_BUFF_SIZE  # 1024 Bytes
 
 class UDPClient:
@@ -106,13 +107,22 @@ class UDPClient:
                 self.state = "waitSeq_0" # Change state to waitSeq_0
 
 def main():
-
     client = UDPClient()
+
+    print(f"\n---------------------------------\n")
+    print(f"🚀 Client is running on {bind_address[0]} with PORT {bind_address[1]}!")
+    print(f"\n---------------------------------\n")
 
     client.receive()
 
+    print(f"\n---------------------------------\n")
+    print(f"🛑 Stopping client socket!")
+
     client.client_socket.close()
+    
+    print(f"\n---------------------------------\n")
 
     print('\x1b[7;35;47m' + 'End of program' + '\x1b[0m')
+
 
 main()

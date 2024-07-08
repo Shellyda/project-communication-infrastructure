@@ -3,16 +3,17 @@ import struct
 from random import *
 import env_props as env # Environment properties
 
-bind_address = env.SENDER_HOST
+bind_address = env.SERVER_HOST
+target_address = env.CLIENT_HOST # Target
+
 MAX_BUFF_SIZE = env.MAX_BUFF_SIZE - 4  # 1024 - seqNum = 1024 - sizeof(int)
-target_address = env.RECEIVER_HOST
-time = 1.0 # 1000ms
+TIMEOUT = 1.0 # 1000ms
 
 class UDPServer:
     def __init__(self, socket_family=skt.AF_INET, socket_type=skt.SOCK_DGRAM, socket_binding=bind_address):
         self.server_socket = skt.socket(socket_family, socket_type)
         self.server_socket.bind(socket_binding) # Binding the socket to the address
-        self.server_socket.settimeout(time)
+        self.server_socket.settimeout(TIMEOUT)
         self.state = ""
 
     def sendPkt(self, payload, seqNum): # Converts the data into a string representation and encodes it into bytes
@@ -102,7 +103,7 @@ class UDPServer:
                 self.state = "waitAck_0"
 
             elif self.action == "stopTimer_0":
-                self.server_socket.settimeout(time) # Reset timer
+                self.server_socket.settimeout(TIMEOUT) # Reset timer
                 self.state = "waitCall_1"
 
             elif self.action == "sendPktSeq_1":
@@ -115,7 +116,7 @@ class UDPServer:
                 self.state = "waitAck_1"
 
             elif self.action == "stopTimer_1":
-                self.server_socket.settimeout(time) # Reset timer
+                self.server_socket.settimeout(TIMEOUT) # Reset timer
                 self.state = "waitCall_0"
 
             elif self.action == "ReSendPktSeq_0":
@@ -138,15 +139,23 @@ class UDPServer:
                 self.state = "waitAck_1"
 
 def main():
-
     server = UDPServer()
+
+    print(f"\n---------------------------------\n")
+    print(f"🌐 Server is running on {bind_address[0]} with PORT {bind_address[1]}!")
+    print(f"\n---------------------------------\n")
 
     input_file = input("💬 Enter the file name to send to server, you can choose 'image.png' or 'text.txt': ")
     message = input_file
 
     server.send(message)
 
+    print(f"\n---------------------------------\n")
+    print(f"🛑 Stopping server socket!")
+
     server.server_socket.close()
+
+    print(f"\n---------------------------------\n")
 
     print('\x1b[7;35;47m' + 'End of program' + '\x1b[0m')
 
