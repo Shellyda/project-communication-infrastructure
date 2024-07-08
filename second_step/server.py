@@ -47,14 +47,18 @@ class UDPServer:
         print(f"Waiting for a call with sequence_number = {sequence_number}")
         self.action = f"send_packet_seq_{sequence_number}" # Send sequence packet 
 
-    def send_packet_sequence(self, sequence_number):
-        data = file.read(MAX_BUFF_SIZE)  # Read 1024 bytes from the file
+    def send_packet_sequence(self, sequence_number, file):
+                data = file.read(MAX_BUFF_SIZE)  # Read 1024 bytes from the file
                 if not data:
                     self.end_of_packet = True
                     self.send_packet(b'END', int(sequence_number))
                 else: # there are still packets to send
                     self.send_packet(data, int(sequence_number))
                 self.state = f"wait_ack_{sequence_number}"
+
+    def stop_timer(self, new_current_call):
+        self.server_socket.settimeout(TIMEOUT) # Reset timer
+        self.state = f"wait_call_{new_current_call}"
 
     
     def send(self, message):
@@ -85,17 +89,16 @@ class UDPServer:
 
             # Packets sequences senders
             if self.action == "send_packet_seq_0":
-               self.send_packet_sequence('0')
+               self.send_packet_sequence('0', file)
             elif self.action == "send_packet_seq_1":
-               send_packet_sequence('1')
+               self.send_packet_sequence('1', file)
 
             # Stop timer
             elif self.action == "stop_timer_0":
-                self.server_socket.settimeout(TIMEOUT) # Reset timer
-                self.state = "wait_call_1"
+                self.stop_timer('1') 
             elif self.action == "stop_timer_1":
-                self.server_socket.settimeout(TIMEOUT) # Reset timer
-                self.state = "wait_call_0"
+                self.stop_timer('0')
+
 
             # Resend packet
             elif self.action == "resend_packet_seq_0":
