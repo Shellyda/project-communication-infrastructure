@@ -35,8 +35,6 @@ class UDPClient:
 
         self.action = "sendAck0"
 
-        print("exited")
-
         while(True): # Main loop of the receiver's finite state machine
     
             if self.state == "waitSeq_0": # State of waiting for packet 0

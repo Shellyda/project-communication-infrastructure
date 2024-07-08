@@ -6,7 +6,7 @@ import env_props as env # Environment properties
 bind_address = env.SERVER_HOST
 target_address = env.CLIENT_HOST # Target
 
-MAX_BUFF_SIZE = env.MAX_BUFF_SIZE - 4  # 1024 - seqNum = 1024 - sizeof(int)
+MAX_BUFF_SIZE = env.MAX_BUFF_SIZE - 4  # 1024 - sequence_number = 1024 - sizeof(int)
 TIMEOUT = 1.0 # 1000ms
 
 class UDPServer:
@@ -16,10 +16,10 @@ class UDPServer:
         self.server_socket.settimeout(TIMEOUT)
         self.state = ""
 
-    def sendPkt(self, payload, seqNum): # Converts the data into a string representation and encodes it into bytes
-        tam = len(payload)
-        data = bytearray(4 + tam)
-        data = struct.pack(f'i {tam}s', seqNum, payload)
+    def send_packet(self, payload, sequence_number): # Converts the data into a string representation and encodes it into bytes
+        packet_length = len(payload)
+        data = bytearray(4 + packet_length)
+        data = struct.pack(f'i {packet_length}s', sequence_number, payload)
         print('\x1b[1;32;40m' + 'Packet sent' + '\x1b[0m')
         if randint(0, 3):   # 25% loss rate
             self.server_socket.sendto(data, target_address) # Sends the data to the destination
@@ -28,115 +28,110 @@ class UDPServer:
 
     def send(self, message):
 
-        self.fimPck = 0
+        self.end_of_packet = False
 
         data = message.encode()
-
-        self.sendPkt(data, 0)
+        self.send_packet(data, 0)
 
         file = open(message, 'rb') # Open the file in binary mode
 
-        self.state = "waitAck_0"
+        self.state = "wait_ack_0"
 
         print("exit")
 
-        while(True): # Main loop of the sender's finite state machine
+        while not end_of_packet: # Main loop of the sender's finite state machine
 
-            if self.state == "waitCall_0":
+            if self.state == "wait_call_0":
                 # State of waiting to send sequence packet 0
-                print("Waiting for a call with SeqNum = 0")
-                self.action = "sendPktSeq_0" # Send sequence packet 0
+                print("Waiting for a call with sequence_number = 0")
+                self.action = "send_packet_seq_0" # Send sequence packet 0
 
-            elif self.state == "waitAck_0":
+            elif self.state == "wait_ack_0":
                 # State of waiting for Ack 0 after packet 0 has been sent
                 print("Waiting for an ACK = 0")
                 try:
-                    ack_pck = self.server_socket.recv(MAX_BUFF_SIZE) # If an Ack packet arrives, receives the Ack
+                    acknowledgement_packet = self.server_socket.recv(MAX_BUFF_SIZE) # If an Ack packet arrives, receives the Ack
                 except skt.timeout:
                     print('\x1b[7;31;47m' + 'Transmitter Timeout' + '\x1b[0m')
-                    self.action = "ReSendPktSeq_0" # If a timeout occurs, resend sequence packet 0
+                    self.action = "resend_packet_seq_0" # If a timeout occurs, resend sequence packet 0
                 else:
-                    ack_pck = struct.unpack_from('i', ack_pck) # Decodes the ACK packet
-                    ack = ack_pck[0]             # Gets the ACK field of the packet
+                    acknowledgement_packet = struct.unpack_from('i', acknowledgement_packet) # Decodes the ACK packet
+                    ack = acknowledgement_packet[0]             # Gets the ACK field of the packet
                     if ack == 0:
                         print('\x1b[1;34;40m' + 'Ack 0 received' + '\x1b[0m')
-                        self.action = "stopTimer_0" # If the ACK is 0, reset the timer
-                        if self.fimPck:
-                            file.close()
-                            break
+                        self.action = "stop_timer_0" # If the ACK is 0, reset the timer
                     else:
-                        self.action = "ReSendPktSeq_0" # If the ack has the wrong sequence, resend packet 0
+                        self.action = "resend_packet_seq_0" # If the ack has the wrong sequence, resend packet 0
 
-            elif self.state == "waitCall_1":
+            elif self.state == "wait_call_1":
                 # State of waiting to send sequence packet 1
-                print("Waiting for a call with SeqNum = 1")
-                self.action = "sendPktSeq_1" # Send sequence packet 1
+                print("Waiting for a call with sequence_number = 1")
+                self.action = "send_packet_seq_1" # Send sequence packet 1
 
-            elif self.state == "waitAck_1":
+            elif self.state == "wait_ack_1":
                 # State of waiting for Ack 1 after packet 1 has been sent
                 print("Waiting for an ACK = 1")
                 try:
-                    ack_pck = self.server_socket.recv(MAX_BUFF_SIZE) # If an Ack packet arrives, receives the Ack
+                    acknowledgement_packet = self.server_socket.recv(MAX_BUFF_SIZE) # If an Ack packet arrives, receives the Ack
                 except skt.timeout:
                     print('\x1b[7;31;47m' + 'Transmitter Timeout' + '\x1b[0m')
-                    self.action = "ReSendPktSeq_1" # If a timeout occurs, resend sequence packet 1
+                    self.action = "resend_packet_seq_1" # If a timeout occurs, resend sequence packet 1
                 else:
-                    ack_pck = struct.unpack_from('i', ack_pck) # Decodes the ACK packet
-                    ack = ack_pck[0]             # Gets the ACK field of the packet
+                    acknowledgement_packet = struct.unpack_from('i', acknowledgement_packet) # Decodes the ACK packet
+                    ack = acknowledgement_packet[0]             # Gets the ACK field of the packet
                     if ack == 1:
-                        self.action = "stopTimer_1" # If the ACK is 1, reset the timer
+                        self.action = "stop_timer_1" # If the ACK is 1, reset the timer
                         print('\x1b[1;34;40m' + 'Ack 1 received' + '\x1b[0m')
-                        if self.fimPck: # Transmission ended and receiver received everything
-                            file.close()
-                            break
                     else:
-                        self.action = "ReSendPktSeq_1" # If the ack has the wrong sequence, resend packet 1
+                        self.action = "resend_packet_seq_1" # If the ack has the wrong sequence, resend packet 1
 
-            if self.action == "sendPktSeq_0":
+            if self.action == "send_packet_seq_0":
                 data = file.read(MAX_BUFF_SIZE)  # Read 1024 bytes from the file
                 if not data:
-                    self.fimPck = 1
-                    self.sendPkt(b'END', 0)
+                    self.end_of_packet = True
+                    self.send_packet(b'END', 0)
                 else:
-                    self.sendPkt(data, 0)
+                    self.send_packet(data, 0)
 
-                self.state = "waitAck_0"
+                self.state = "wait_ack_0"
 
-            elif self.action == "stopTimer_0":
+            elif self.action == "stop_timer_0":
                 self.server_socket.settimeout(TIMEOUT) # Reset timer
-                self.state = "waitCall_1"
+                self.state = "wait_call_1"
 
-            elif self.action == "sendPktSeq_1":
+            elif self.action == "send_packet_seq_1":
                 data = file.read(MAX_BUFF_SIZE)  # Read 1024 bytes from the file
                 if not data:
-                    self.fimPck = 1
-                    self.sendPkt(b'END', 1)
+                    self.end_of_packet = True
+                    self.send_packet(b'END', 1)
                 else: # there are still packets to send
-                    self.sendPkt(data, 1)
-                self.state = "waitAck_1"
+                    self.send_packet(data, 1)
+                self.state = "wait_ack_1"
 
-            elif self.action == "stopTimer_1":
+            elif self.action == "stop_timer_1":
                 self.server_socket.settimeout(TIMEOUT) # Reset timer
-                self.state = "waitCall_0"
+                self.state = "wait_call_0"
 
-            elif self.action == "ReSendPktSeq_0":
-                print('\x1b[1;33;40m' + 'Resending Packet (SeqNum=0)' + '\x1b[0m')
+            elif self.action == "resend_packet_seq_0":
+                print('\x1b[1;33;40m' + 'Resending Packet (sequence_number=0)' + '\x1b[0m')
 
                 if not data:
-                    self.fimPck = 1
-                    self.sendPkt(b'END', 0)
+                    self.end_of_packet = True
+                    self.send_packet(b'END', 0)
                 else: # there are still packets to send
-                    self.sendPkt(data, 0)
-                self.state = "waitAck_0"
+                    self.send_packet(data, 0)
+                self.state = "wait_ack_0"
 
-            elif self.action == "ReSendPktSeq_1":
-                print('\x1b[1;33;40m' + 'Resending Packet (SeqNum=1)' + '\x1b[0m')
+            elif self.action == "resend_packet_seq_1":
+                print('\x1b[1;33;40m' + 'Resending Packet (sequence_number=1)' + '\x1b[0m')
                 if not data:
-                    self.fimPck = 1
-                    self.sendPkt(b'END', 1)
+                    self.end_of_packet = True
+                    self.send_packet(b'END', 1)
                 else: # there are still packets to send
-                    self.sendPkt(data, 1)
-                self.state = "waitAck_1"
+                    self.send_packet(data, 1)
+                self.state = "wait_ack_1"
+        
+        file.close() # Transmission ended and receiver received everything
 
 def main():
     server = UDPServer()
