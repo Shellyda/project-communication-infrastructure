@@ -35,6 +35,8 @@ In this second phase of the project, the task is to implement a reliable data tr
    ```python
    💬 Enter the file name to send to client, you can choose 'image.png' or 'text.txt': image.png # Here goes your input
    ```
+   ##### obs.: The image is large so its transmission takes longer than the text transmission
+
 
 #### 3. Run the Client
   Open another terminal, navigate to the project first step folder directory, and run the client script:
