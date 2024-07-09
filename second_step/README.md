@@ -69,7 +69,7 @@ In this second phase of the project, the task is to implement a reliable data tr
    ```
 
 ### Conclusion
-   In the project second step folder directory, after carrying out the above process, there will be new `.png` or `.txt` files, *depending* on what you chose in *step 3*, renamed to confirm that the file transfer took place.
+   In the project second step folder directory, after carrying out the above process, there will be new `.png` or `.txt` files, *depending* on what you chose in *step 2*, renamed to confirm that the file transfer took place.
 
 ### Classmates Team 01
 - João Victor - jvnms@cin.ufpe.br
