@@ -41,7 +41,7 @@ class Server:
             self.server_socket.sendto("Username already in use.".encode(), addr)
         else:
             self.clients[username] = addr
-            self.server_socket.sendto("You are online! Use --help to see available commands.".encode(), addr)
+            self.server_socket.sendto(f"Login successful {username}".encode(), addr)
             print(f'User [{username}/{addr[0]}:{addr[1]}] is connected!')
     
     def logout(self, addr):

@@ -1,5 +1,5 @@
 import socket as skt
-from threading import Thread
+from threading import Thread, Event
 import env_props as env
 
 MAX_BUFF_SIZE = env.MAX_BUFF_SIZE
@@ -9,6 +9,7 @@ class Client:
         self.client_socket = skt.socket(skt.AF_INET, skt.SOCK_DGRAM)
         self.server_address = (host, port)
         self.username = None
+        self.login_event = Event()  
 
     def send_message(self, message):
         self.client_socket.sendto(message.encode(), self.server_address)
@@ -16,7 +17,14 @@ class Client:
     def receive_message(self):
         while True:
             data, _ = self.client_socket.recvfrom(MAX_BUFF_SIZE)
-            print(data.decode())
+            message = data.decode()
+            print(message)
+            if message.startswith("Login successful"):
+                self.username = message.split()[-1]
+                self.login_event.set() 
+            elif message.startswith("Username already in use"):
+                self.login_event.set() 
+                self.username = None
 
     def login(self, username):
         self.send_message(f"login {username}")
@@ -48,15 +56,14 @@ class Client:
 
     def run(self):
         Thread(target=self.receive_message).start()
-
-        command = input("Enter your username to login: ")
-        self.login(command)
-
         while True:
             if self.username is None:
                 command = input("Enter your username to login: ")
+                self.login_event.clear()  
                 self.login(command)
+                self.login_event.wait() 
             else:
+                print('Use --help to see available commands')
                 command = input(f"{self.username}@client:~$ ")
                 if command.startswith("login"):
                     print("You are already logged in.")
