@@ -1,6 +1,8 @@
 import socket as skt
-import struct
 from threading import Thread
+import env_props as env
+
+MAX_BUFF_SIZE = env.MAX_BUFF_SIZE
 
 class Server:
     def __init__(self, host, port):
@@ -18,15 +20,15 @@ class Server:
         if action == "login":
             self.login(command[1], addr)
         elif action == "logout":
-            self.logout(command[1])
+            self.logout(addr)
         elif action == "create":
             self.create_accommodation(command[1], command[2], addr)
         elif action == "list:myacmd":
-            self.list_my_accommodations(command[1], addr)
+            self.list_my_accommodations(addr)
         elif action == "list:acmd":
             self.list_accommodations(addr)
         elif action == "list:myrsv":
-            self.list_my_reservations(command[1], addr)
+            self.list_my_reservations(addr)
         elif action == "book":
             self.book_accommodation(command[1], command[2], command[3], addr)
         elif action == "cancel":
@@ -40,10 +42,14 @@ class Server:
         else:
             self.clients[username] = addr
             self.server_socket.sendto("You are online! Use --help to see available commands.".encode(), addr)
+            print(f'User [{username}/{addr[0]}:{addr[1]}] is connected!')
     
-    def logout(self, username):
+    def logout(self, addr):
+        username = self.get_username_by_address(addr)
         if username in self.clients:
             del self.clients[username]
+            print(f'User [{username}/{addr[0]}:{addr[1]}] disconnected!')
+
     
     def create_accommodation(self, name, location, addr):
         if (name, location) in self.accommodations:
@@ -60,12 +66,12 @@ class Server:
             self.server_socket.sendto(f"Accommodation {name} created successfully!".encode(), addr)
             self.notify_all_clients(f"[{owner_name}/{addr[0]}:{addr[1]}] New accommodation {name} in {location} created!", exclude=addr)
     
-    def list_my_accommodations(self, username, addr):
+    def list_my_accommodations(self, addr):
         my_acmds = []
         for (name, location), details in self.accommodations.items():
             if details['owner'] == addr:
                 res = details['reservations']
-                acmd_info = f"ID {details['id']}: {name} in {location} - Available: {details['available_days']} - Reserved: {[(d, self.get_username_by_address(u)) for d, u in res.items()]}"
+                acmd_info = f"ID {details['id']}: {name} in {location} \n- Available: {details['available_days']}\n - Reserved: {[(d, self.get_username_by_address(u)) for d, u in res.items()]}"
                 my_acmds.append(acmd_info)
         response = "\n".join(my_acmds) if my_acmds else "You have no accommodations."
         self.server_socket.sendto(response.encode(), addr)
@@ -79,7 +85,7 @@ class Server:
         response = "\n".join(acmds) if acmds else "No accommodations available."
         self.server_socket.sendto(response.encode(), addr)
     
-    def list_my_reservations(self, username, addr):
+    def list_my_reservations(self, addr):
         my_rsvs = []
         for (owner, id, day), (guest_name, guest_addr) in self.reservations.items():
             if guest_addr == addr:
@@ -131,11 +137,11 @@ class Server:
         help_message = """
 Available commands:
 - login <username>: Log in with a username
-- logout <username>: Log out
+- logout: Log out
 - create <name> <location>: Create a new accommodation
-- list:myacmd <username>: List your accommodations
+- list:myacmd: List your accommodations
 - list:acmd: List all available accommodations
-- list:myrsv <username>: List your reservations
+- list:myrsv: List your reservations
 - book <owner> <id> <day>: Book an accommodation
 - cancel <owner> <id> <day>: Cancel a reservation
 - --help: Display this help message
@@ -154,9 +160,9 @@ Available commands:
     def run(self):
         print("Accommodation server started. Waiting for connections...")
         while True:
-            data, addr = self.server_socket.recvfrom(1024)
+            data, addr = self.server_socket.recvfrom(MAX_BUFF_SIZE)
             Thread(target=self.handle_client, args=(data, addr)).start()
 
 if __name__ == "__main__":
-    server = Server('127.0.0.1', 12000)
+    server = Server(env.SERVER_HOST, env.SERVER_PORT)
     server.run()

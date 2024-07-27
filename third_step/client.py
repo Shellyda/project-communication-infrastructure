@@ -1,6 +1,8 @@
 import socket as skt
-import struct
 from threading import Thread
+import env_props as env
+
+MAX_BUFF_SIZE = env.MAX_BUFF_SIZE
 
 class Client:
     def __init__(self, host, port):
@@ -13,11 +15,10 @@ class Client:
 
     def receive_message(self):
         while True:
-            data, _ = self.client_socket.recvfrom(1024)
+            data, _ = self.client_socket.recvfrom(MAX_BUFF_SIZE)
             print(data.decode())
 
     def login(self, username):
-        self.username = username
         self.send_message(f"login {username}")
 
     def logout(self):
@@ -28,13 +29,13 @@ class Client:
         self.send_message(f"create {name} {location}")
 
     def list_my_accommodations(self):
-        self.send_message(f"list:myacmd {self.username}")
+        self.send_message(f"list:myacmd")
 
     def list_accommodations(self):
         self.send_message("list:acmd")
 
     def list_my_reservations(self):
-        self.send_message(f"list:myrsv {self.username}")
+        self.send_message(f"list:myrsv")
 
     def book_accommodation(self, owner, acmd_id, day):
         self.send_message(f"book {owner} {acmd_id} {day}")
@@ -47,6 +48,10 @@ class Client:
 
     def run(self):
         Thread(target=self.receive_message).start()
+
+        command = input("Enter your username to login: ")
+        self.login(command)
+
         while True:
             if self.username is None:
                 command = input("Enter your username to login: ")
@@ -75,8 +80,9 @@ class Client:
                 elif command.startswith("--help"):
                     self.show_help()
                 else:
+                    print('Command not valid! Use --help to see available commands.')
                     self.send_message(command)
 
 if __name__ == "__main__":
-    client = Client('127.0.0.1', 12000)
+    client = Client(env.SERVER_HOST, env.SERVER_PORT)
     client.run()
