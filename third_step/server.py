@@ -3,11 +3,12 @@ from threading import Thread
 import env_props as env
 
 MAX_BUFF_SIZE = env.MAX_BUFF_SIZE
+bind_address = env.SERVER_ADDRESS
 
 class Server:
-    def __init__(self, host, port):
-        self.server_socket = skt.socket(skt.AF_INET, skt.SOCK_DGRAM)
-        self.server_socket.bind((host, port))
+    def __init__(self, socket_family=skt.AF_INET, socket_type=skt.SOCK_DGRAM, socket_binding=bind_address):
+        self.server_socket = skt.socket(socket_family, socket_type)
+        self.server_socket.bind(socket_binding) # Binding the socket to the address
         self.clients = {}  # {username: (address, port)}
         self.accommodations = {}  # {(name, location): {'id': id, 'owner': (username, addr), 'description': description, 'available_days': [days], 'reservations': {day: (username, addr)}}}
         self.reservations = {}  # {(owner, id, day): (guest_name, guest_addr)}
@@ -160,9 +161,9 @@ Available commands:
     def run(self):
         print("Accommodation server started. Waiting for connections...")
         while True:
-            data, addr = self.server_socket.recvfrom(MAX_BUFF_SIZE)
-            Thread(target=self.handle_client, args=(data, addr)).start()
+            data, target_address = self.server_socket.recvfrom(MAX_BUFF_SIZE)
+            Thread(target=self.handle_client, args=(data, target_address)).start()
 
 if __name__ == "__main__":
-    server = Server(env.SERVER_HOST, env.SERVER_PORT)
+    server = Server()
     server.run()
