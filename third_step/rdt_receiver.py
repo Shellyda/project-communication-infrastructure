@@ -11,29 +11,29 @@ class RDT_Receiver:
         self.state = ""
 
     def send_acknowledgement(self, ack, sequence_number, target_address):
-        # print('\x1b[1;34;40m' + f'ACK {sequence_number} sent' + '\x1b[0m')
+        print('\x1b[1;34;40m' + f'ACK {sequence_number} sent' + '\x1b[0m')
         data = struct.pack('i', ack)
         if randint(0, 9):  # Simulating 10% loss rate
             self.socket.sendto(data, target_address) # Sends the data to the destination
-        # else: 
-        #     print('\x1b[1;31;40m' + f'ACK = {sequence_number} lost' + '\x1b[0m')
+        else: 
+            print('\x1b[1;31;40m' + f'ACK = {sequence_number} lost' + '\x1b[0m')
         if sequence_number == 0:
             self.state = "wait_seq_1" # Change state to wait_seq_1
         elif sequence_number == 1:
             self.state = "wait_seq_0" # Change state to wait_seq_1
 
     def waiting_for_packet(self, expected_seq_number):
-        # print(f"Waiting for a packet whose sequence_number = {expected_seq_number}")
+        print(f"Waiting for a packet whose sequence_number = {expected_seq_number}")
         try:
             packet, _ = self.socket.recvfrom(MAX_BUFF_SIZE) # Receives the packet if any arrives
         except: 
-            # print(f'an exception occurred (wait_seq_{expected_seq_number})')
+            print(f'an exception occurred (wait_seq_{expected_seq_number})')
             pass # While there is no packet to receive, just wait
         else:
-            # print('\x1b[1;32;40m' + 'Packet received' + '\x1b[0m')
-            length = len(packet) - 4
-            packet = struct.unpack_from(f'i {length}s', packet)
+            print('\x1b[1;32;40m' + 'Packet received' + '\x1b[0m')
             sequence_number = packet[0]
+                                  
+            self.message_complete = packet == b'END' # If the message is complete
             
             if sequence_number == expected_seq_number:
                 self.action = f"send_ack_{expected_seq_number}"  # Upon receiving the packet, if the sequence number is zero or one, send the corresponding ack
@@ -48,14 +48,16 @@ class RDT_Receiver:
         self.socket.sendto(message.encode(), target_address)
 
     def receive(self):
-        # print("Waiting for a packet whose sequence_number = 0")
+        self.message_complete = False
+        print("Waiting for a packet whose sequence_number = 0")
         data, target_address = self.socket.recvfrom(MAX_BUFF_SIZE) # Receiving the file name
         
-        # print('\x1b[1;32;40m' + 'Packet received' + '\x1b[0m')
+        print('\x1b[1;32;40m' + 'Packet received' + '\x1b[0m')
 
         self.action = "send_ack_0"
 
-        while not data: # Main loop of the receiver's finite state machine
+        while not self.message_complete: # Main loop of the receiver's finite state machine
+            print(self.message_complete)
             if self.state == "wait_seq_0": # State of waiting for packet 0
                 self.waiting_for_packet(0)
 
@@ -68,4 +70,4 @@ class RDT_Receiver:
                 self.send_acknowledgement(1, 1, target_address) # Send sequence 1 ack
                 
         return data.decode()
-
+                

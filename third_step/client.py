@@ -19,10 +19,11 @@ class Client:
 
     def receive_message(self):
         while True:
-            message = self.receiver.receive()  # Usa o método receive do RDT_Receiver para receber dados
-            print(message, "messagem q vem")
+            message = self.receiver.receive() 
+            
             if message.startswith("Login successful"):
                 self.username = message.split()[-1]
+                print(self.username, "teste")
                 self.login_event.set() 
             elif message.startswith("Username already in use"):
                 self.login_event.set()
