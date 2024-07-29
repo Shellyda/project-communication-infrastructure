@@ -12,22 +12,6 @@ class Client:
         self.server_address = target_address
         self.username = None
         self.login_event = Event() 
-        self.stateS="wait_call_0"
-        self.stateR="wait_seq_0" 
-
-    def waiting_for_ack(self):
-        # State of waiting for Ack, after packet has been sent
-        sequence_number =  int(self.stateS[-1])
-        print(f"Waiting for an ACK = {sequence_number}")
-        acknowledgement_packet = self.client_socket.recv(MAX_BUFF_SIZE) # If an Ack packet arrives, receives the Ack
-        acknowledgement_packet = struct.unpack_from('i', acknowledgement_packet) # Decodes the ACK packet
-        ack = acknowledgement_packet[0]             # Gets the ACK field of the packet
-        if ack == int(sequence_number):
-            print('\x1b[1;34;40m' + f'ACK {ack} received' + '\x1b[0m')
-            if sequence_number == 0:
-                self.stateS = "wait_call_1"
-            elif sequence_number == 1:
-                self.stateS = "wait_call_0"
 
     def send_message(self, message):
         message_encode = message.encode()
