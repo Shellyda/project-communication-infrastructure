@@ -1,6 +1,7 @@
 import socket as skt
 from threading import Thread
 import env_props as env
+import struct
 
 MAX_BUFF_SIZE = env.MAX_BUFF_SIZE
 
@@ -12,36 +13,79 @@ class Server:
         self.accommodations = {}  # {(name, location): {'id': id, 'owner': (username, addr), 'description': description, 'available_days': [days], 'reservations': {day: (username, addr)}}}
         self.reservations = {}  # {(owner, id, day): (guest_name, guest_addr)}
         self.available_days = ["17/07/2024", "18/07/2024", "19/07/2024", "20/07/2024", "21/07/2024", "22/07/2024"]
+        self.stateS={} #{(address, port): (stateS)}
+        self.stateR={} #{(address, port): (stateR)}
+
+    def send_acknowledgement(self, ack, addr):
+        print('\x1b[1;34;40m' + f'ACK {ack} sent' + '\x1b[0m')
+        data = struct.pack('i', ack)
+        self.server_socket.sendto(data, addr) # Sends the data to the destination 
+        if ack == 0:
+            self.stateR[addr] = "wait_seq_1"# Change state to wait_seq_1
+        elif ack == 1:
+            self.stateR[addr] = "wait_seq_0"# Change state to wait_seq_1
+            
+    def machine_is_logged(self, addr):
+        return addr in self.clients.values() 
+    
+    def send_message(self, message, addr):
+        sequence_number = int(self.stateS[addr][-1]) 
+        packet_length = len(message)
+        data = bytearray(4 + packet_length)
+        data = struct.pack(f'i {packet_length}s', sequence_number, message)
+        self.server_socket.sendto(data, addr)
+        print('\x1b[1;34;40m' + f'packet {sequence_number} sent' + '\x1b[0m')
+        self.stateS[addr] = f"wait_ack_{sequence_number}"
+        print(self.stateS)
 
     def handle_client(self, data, addr):
+        length = len(data) - 4
+        data1 = struct.unpack_from(f'i {length}s', data)
+        sequence_number = data1[0]
+        payload = data1[1:]
+
+        #print(sequence_number,payload)
+
         command = data.decode().split()
-        action = command[0]
+        action = command[0].lstrip('\x00') 
+
+        # print(repr(command[1]))
+        # print(action=="login")
+        # print(type(action))
+
+        print('\x1b[1;34;40m' + f'packet {sequence_number} received' + '\x1b[0m')
+
+        self.send_acknowledgement(sequence_number,addr)
 
         if action == "login":
             self.login(command[1], addr)
-        elif action == "logout":
-            self.logout(addr)
-        elif action == "create":
-            self.create_accommodation(command[1], command[2], addr)
-        elif action == "list:myacmd":
-            self.list_my_accommodations(addr)
-        elif action == "list:acmd":
-            self.list_accommodations(addr)
-        elif action == "list:myrsv":
-            self.list_my_reservations(addr)
-        elif action == "book":
-            self.book_accommodation(command[1], command[2], command[3], addr)
-        elif action == "cancel":
-            self.cancel_reservation(command[1], command[2], command[3], addr)
-        elif action == "--help":
-            self.show_help(addr)
+        else:
+            if self.machine_is_logged(addr):
+                if action == "logout":
+                    self.logout(addr)
+                elif action == "create":
+                    self.create_accommodation(command[1], command[2], addr)
+                elif action == "list:myacmd":
+                    self.list_my_accommodations(addr)
+                elif action == "list:acmd":
+                    self.list_accommodations(addr)
+                elif action == "list:myrsv":
+                    self.list_my_reservations(addr)
+                elif action == "book":
+                    self.book_accommodation(command[1], command[2], command[3], addr)
+                elif action == "cancel":
+                    self.cancel_reservation(command[1], command[2], command[3], addr)
+                elif action == "--help":
+                    self.show_help(addr)
+            else: 
+                print("nao logado, precisa implementar")
 
     def login(self, username, addr):
         if username in self.clients:
-            self.server_socket.sendto("Username already in use.".encode(), addr)
+            self.send_message("Username already in use.".encode(), addr)
         else:
             self.clients[username] = addr
-            self.server_socket.sendto(f"Login successful {username}".encode(), addr)
+            self.send_message(f"Login successful {username}".encode(), addr)
             print(f'User [{username}/{addr[0]}:{addr[1]}] is connected!')
     
     def logout(self, addr):
@@ -162,6 +206,8 @@ Available commands:
         while True:
             data, addr = self.server_socket.recvfrom(MAX_BUFF_SIZE)
             Thread(target=self.handle_client, args=(data, addr)).start()
+            self.stateS[addr]="wait_call_0"
+            self.stateR[addr]="wait_seq_0"
 
 if __name__ == "__main__":
     server = Server(env.SERVER_HOST, env.SERVER_PORT)
