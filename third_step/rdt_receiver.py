@@ -3,14 +3,11 @@ import struct
 from random import *
 import env_props as env # Environment properties
 
-bind_address = env.CLIENT_ADDRESS
-
 MAX_BUFF_SIZE = env.MAX_BUFF_SIZE  # 1024 Bytes
 
 class RDT_Receiver:
-    def __init__(self, socket_family=skt.AF_INET, socket_type=skt.SOCK_DGRAM, socket_binding=bind_address):
+    def __init__(self, socket_family=skt.AF_INET, socket_type=skt.SOCK_DGRAM):
         self.socket = skt.socket(socket_family, socket_type)
-        self.socket.bind(socket_binding) # Binding the socket to the address
         self.state = ""
 
     def send_acknowledgement(self, ack, sequence_number, target_address):
@@ -28,7 +25,7 @@ class RDT_Receiver:
     def waiting_for_packet(self, expected_seq_number):
         print(f"Waiting for a packet whose sequence_number = {expected_seq_number}")
         try:
-            packet, _ = self.socket.recvfrom(self.buffer_max_size) # Receives the packet if any arrives
+            packet, _ = self.socket.recvfrom(MAX_BUFF_SIZE) # Receives the packet if any arrives
         except: 
             print(f'an exception occurred (wait_seq_{expected_seq_number})')
             pass # While there is no packet to receive, just wait
@@ -38,26 +35,25 @@ class RDT_Receiver:
             packet = struct.unpack_from(f'i {length}s', packet)
             sequence_number = packet[0]
             payload = packet[1:]
+            
+            self.message_complete = payload[0] == b'END' # If received final message from sender, end the loop
 
             if sequence_number == expected_seq_number:
-                if(payload[0] == b'END'): # If received final message from sender, end the loop
-                    self.message_complete = True
-
                 self.action = f"send_ack_{expected_seq_number}"  # Upon receiving the packet, if the sequence number is zero or one, send the corresponding ack
             else: 
                 if expected_seq_number == 0:
                     self.action = "send_ack_1" # If the packet is not the correct one, send the corresponding ack instead
                 elif expected_seq_number == 1:
                     self.action  = "send_ack_0" # If the packet is not the correct one, send the corresponding ack instead
-                if(payload[0] == b'END'): # If received final message from sender, end the loop
-                    self.message_complete = True    
+    
+    def send(self, message, target_address):
+        self.socket.sendto(message.encode(), target_address)
 
-    def handle_receive_message(self):
+    def receive(self):
         self.message_complete = False # Flag to indicate that file was completely sent
-
         print("Waiting for a packet whose sequence_number = 0")
-        data, target_address = self.socket.recvfrom(self.buffer_max_size) # Receiving the file name
-        
+        data, target_address = self.socket.recvfrom(MAX_BUFF_SIZE) # Receiving the file name
+        print('quem me enviou->', target_address)
         message = data.decode()
         print(message)
 

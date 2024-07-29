@@ -3,14 +3,12 @@ import struct
 from random import *
 import env_props as env # Environment properties
 
-
 MAX_BUFF_SIZE = env.MAX_BUFF_SIZE - 4  # 1024 - sequence_number = 1024 - sizeof(int)
 TIMEOUT = 1.0 # 1000ms
 
 class RDT_Sender:
-   def __init__(self, bind_address, target_address):
+   def __init__(self, target_address):
         self.socket = skt.socket(skt.AF_INET, skt.SOCK_DGRAM)
-        self.socket.bind(bind_address) # Binding the socket to the address
         self.socket.settimeout(TIMEOUT)
         self.target_address = target_address
         self.state = ""
@@ -21,6 +19,7 @@ class RDT_Sender:
         data = struct.pack(f'i {packet_length}s', sequence_number, payload)
         print('\x1b[1;32;40m' + 'Packet sent' + '\x1b[0m')
         if randint(0, 3):   # 25% loss rate
+            print('mandando para esse ->',self.target_address)
             self.socket.sendto(data, self.target_address) # Sends the data to the destination
         else:
             print('\x1b[1;31;40m' + 'Packet lost' + '\x1b[0m')
@@ -43,10 +42,11 @@ class RDT_Sender:
                         self.action = f"resend_packet_seq_{sequence_number}" # If the ack has the wrong sequence, resend packet 
 
    def waiting_for_call(self, sequence_number):
-        print(f"Waiting for a call with sequence_number = {sequence_number}")
+        # print(f"Waiting for a call with sequence_number = {sequence_number}")
         self.action = f"send_packet_seq_{sequence_number}" # Send sequence packet 
 
    def send_packet_sequence(self, sequence_number, data):
+        print(data, "end_of_packet")
         if not data:
             self.end_of_packet = True
             self.send_packet(b'END', int(sequence_number))
@@ -64,11 +64,10 @@ class RDT_Sender:
 
         self.state = f"wait_call_{new_call_sequence_number}" 
 
-   def handle_send_message(self, message):
+   def send(self, message):
         self.end_of_packet = False
 
-        data = message.encode()
-        self.send_packet(data, 0)
+        self.send_packet(message, 0)
 
         self.state = "wait_ack_0"
 
@@ -82,16 +81,16 @@ class RDT_Sender:
                 self.waiting_for_call('1')
             elif self.state == "wait_ack_0":
                 # State of waiting for Ack 0 after packet 0 has been sent
-                self.waiting_for_ack('0')
+                self.waiting_for_acknowledgement('0')
             elif self.state == "wait_ack_1":
                 # State of waiting for Ack 1 after packet 1 has been sent
-                self.waiting_for_ack('1')
+                self.waiting_for_acknowledgement('1')
 
             # Packets sequences senders
             if self.action == "send_packet_seq_0" or self.action == "resend_packet_seq_0":
-               self.send_packet_sequence('0', data)
+               self.send_packet_sequence('0', message)
             elif self.action == "send_packet_seq_1" or self.action == "resend_packet_seq_1":
-               self.send_packet_sequence('1', data)
+               self.send_packet_sequence('1', message)
 
             # Stop timer
             elif self.action == "stop_timer_0":

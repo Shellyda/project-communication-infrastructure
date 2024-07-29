@@ -159,14 +159,15 @@ Available commands:
     def get_addr_by_username(self, username):
         return self.clients.get(username, None)
             
-    def send_data(data, target_address):
-        sender = RDT_Sender(bind_address, target_address)  
+    def send_data(self, data, target_address):
+        sender = RDT_Sender(target_address)  
         sender.send(data)  # Use send method from RDT_Sender
 
     def run(self):
         print("Accommodation server started. Waiting for connections...")
         while True:
             data, target_address = self.server_socket.recvfrom(MAX_BUFF_SIZE)
+            print(target_address, "enviado do cliente")
             Thread(target=self.handle_client, args=(data, target_address)).start()
 
 if __name__ == "__main__":
