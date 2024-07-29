@@ -4,11 +4,12 @@ import env_props as env
 import struct
 
 MAX_BUFF_SIZE = env.MAX_BUFF_SIZE
+target_address = env.SERVER_ADDRESS
 
 class Client:
-    def __init__(self, host, port):
-        self.client_socket = skt.socket(skt.AF_INET, skt.SOCK_DGRAM)
-        self.server_address = (host, port)
+    def __init__(self, socket_family=skt.AF_INET, socket_type=skt.SOCK_DGRAM):
+        self.client_socket = skt.socket(socket_family, socket_type)
+        self.server_address = target_address
         self.username = None
         self.login_event = Event() 
         self.stateS="wait_call_0"
@@ -124,5 +125,5 @@ class Client:
                     self.send_message(command)
 
 if __name__ == "__main__":
-    client = Client(env.SERVER_HOST, env.SERVER_PORT)
+    client = Client()
     client.run()
