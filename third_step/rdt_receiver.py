@@ -69,5 +69,5 @@ class RDT_Receiver:
             elif self.action == "send_ack_1":
                 self.send_acknowledgement(1, 1, target_address) # Send sequence 1 ack
                 
-        return data.decode()
+        return data.decode().strip('\x00')
                 

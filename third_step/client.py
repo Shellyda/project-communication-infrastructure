@@ -21,6 +21,8 @@ class Client:
         while True:
             message = self.receiver.receive() 
             
+            print(message)
+            
             if message.startswith("Login successful"):
                 self.username = message.split()[-1]
                 print(self.username, "teste")
@@ -60,7 +62,6 @@ class Client:
     def run(self):
         Thread(target=self.receive_message).start()
         while True:
-            print('username', self.username)
             if self.username is None:
                 command = input("Enter your username to login: ")
                 self.login_event.clear()  

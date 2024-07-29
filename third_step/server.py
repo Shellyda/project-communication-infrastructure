@@ -18,7 +18,7 @@ class Server:
     def handle_client(self, data, addr):
         command = data.decode().split()
         action = command[0]
-
+        
         if action == "login":
             self.login(command[1], addr)
         elif action == "logout":
