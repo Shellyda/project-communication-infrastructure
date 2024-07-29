@@ -19,9 +19,8 @@ class Client:
 
     def receive_message(self):
         while True:
-            data = self.receiver.receive()  # Usa o método receive do RDT_Receiver para receber dados
-            message = data.decode()
-            print(message)
+            message = self.receiver.receive()  # Usa o método receive do RDT_Receiver para receber dados
+            print(message, "messagem q vem")
             if message.startswith("Login successful"):
                 self.username = message.split()[-1]
                 self.login_event.set() 
@@ -60,6 +59,7 @@ class Client:
     def run(self):
         Thread(target=self.receive_message).start()
         while True:
+            print('username', self.username)
             if self.username is None:
                 command = input("Enter your username to login: ")
                 self.login_event.clear()  

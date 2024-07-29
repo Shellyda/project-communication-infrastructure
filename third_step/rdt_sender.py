@@ -17,26 +17,26 @@ class RDT_Sender:
         packet_length = len(payload)
         data = bytearray(4 + packet_length)
         data = struct.pack(f'i {packet_length}s', sequence_number, payload)
-        print('\x1b[1;32;40m' + 'Packet sent' + '\x1b[0m')
+        # print('\x1b[1;32;40m' + 'Packet sent' + '\x1b[0m')
         if randint(0, 3):   # 25% loss rate
-            print('mandando para esse ->',self.target_address)
+            # print('mandando para esse ->',self.target_address)
             self.socket.sendto(data, self.target_address) # Sends the data to the destination
-        else:
-            print('\x1b[1;31;40m' + 'Packet lost' + '\x1b[0m')
+        # else:
+        #     # print('\x1b[1;31;40m' + 'Packet lost' + '\x1b[0m')
 
    def waiting_for_acknowledgement(self, sequence_number):
         # State of waiting for Ack, after packet has been sent
-                print(f"Waiting for an ACK = {sequence_number}")
+                # print(f"Waiting for an ACK = {sequence_number}")
                 try:
                     acknowledgement_packet = self.socket.recv(MAX_BUFF_SIZE) # If an Ack packet arrives, receives the Ack
                 except skt.timeout:
-                    print('\x1b[7;31;47m' + 'Transmitter Timeout' + '\x1b[0m')
+                    # print('\x1b[7;31;47m' + 'Transmitter Timeout' + '\x1b[0m')
                     self.action = f"resend_packet_seq_{sequence_number}" # If a timeout occurs, resend sequence packet 
                 else:
                     acknowledgement_packet = struct.unpack_from('i', acknowledgement_packet) # Decodes the ACK packet
                     ack = acknowledgement_packet[0]             # Gets the ACK field of the packet
                     if ack == int(sequence_number):
-                        print('\x1b[1;34;40m' + f'ACK {sequence_number} received' + '\x1b[0m')
+                        # print('\x1b[1;34;40m' + f'ACK {sequence_number} received' + '\x1b[0m')
                         self.action = f"stop_timer_{sequence_number}" # If the ACK is sequence_number, reset the timer
                     else:
                         self.action = f"resend_packet_seq_{sequence_number}" # If the ack has the wrong sequence, resend packet 
@@ -47,9 +47,8 @@ class RDT_Sender:
 
    def send_packet_sequence(self, sequence_number, data):
         print(data, "end_of_packet")
-        if not data:
+        if data:
             self.end_of_packet = True
-            self.send_packet(b'END', int(sequence_number))
         else: # there are still packets to send
             self.send_packet(data, int(sequence_number))
         self.state = f"wait_ack_{sequence_number}"
@@ -63,6 +62,7 @@ class RDT_Sender:
             new_call_sequence_number = '0'
 
         self.state = f"wait_call_{new_call_sequence_number}" 
+        
 
    def send(self, message):
         self.end_of_packet = False

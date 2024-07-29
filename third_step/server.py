@@ -167,7 +167,7 @@ Available commands:
         print("Accommodation server started. Waiting for connections...")
         while True:
             data, target_address = self.server_socket.recvfrom(MAX_BUFF_SIZE)
-            print(target_address, "enviado do cliente")
+            print(data, "enviado do cliente")
             Thread(target=self.handle_client, args=(data, target_address)).start()
 
 if __name__ == "__main__":
