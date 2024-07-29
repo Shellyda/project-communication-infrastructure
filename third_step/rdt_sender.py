@@ -3,17 +3,16 @@ import struct
 from random import *
 import env_props as env # Environment properties
 
-bind_address = env.SERVER_ADDRESS
-target_address = env.CLIENT_ADDRESS # Target
 
 MAX_BUFF_SIZE = env.MAX_BUFF_SIZE - 4  # 1024 - sequence_number = 1024 - sizeof(int)
 TIMEOUT = 1.0 # 1000ms
 
 class RDT_Sender:
-   def __init__(self, socket_family=skt.AF_INET, socket_type=skt.SOCK_DGRAM, socket_binding=bind_address):
-        self.socket = skt.socket(socket_family, socket_type)
-        self.socket.bind(socket_binding) # Binding the socket to the address
+   def __init__(self, bind_address, target_address):
+        self.socket = skt.socket(skt.AF_INET, skt.SOCK_DGRAM)
+        self.socket.bind(bind_address) # Binding the socket to the address
         self.socket.settimeout(TIMEOUT)
+        self.target_address = target_address
         self.state = ""
 
    def send_packet(self, payload, sequence_number): # Converts the data into a string representation and encodes it into bytes
@@ -22,7 +21,7 @@ class RDT_Sender:
         data = struct.pack(f'i {packet_length}s', sequence_number, payload)
         print('\x1b[1;32;40m' + 'Packet sent' + '\x1b[0m')
         if randint(0, 3):   # 25% loss rate
-            self.socket.sendto(data, target_address ) # Sends the data to the destination
+            self.socket.sendto(data, self.target_address) # Sends the data to the destination
         else:
             print('\x1b[1;31;40m' + 'Packet lost' + '\x1b[0m')
 
