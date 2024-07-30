@@ -12,7 +12,7 @@ class Server:
         self.server_socket.bind(socket_binding) # Binding the socket to the address
         self.clients = {}  # {username: (address, port)}
         self.accommodations = {}  # {(name, location): {'id': id, 'owner': (username, addr), 'description': description, 'available_days': [days], 'reservations': {day: (username, addr)}}}
-        self.reservations = {}  # {(owner, id, day): (guest_name, guest_addr)}
+        self.reservations = {}  # {(owner, id, day, location, name): (guest_name, guest_addr)}
         self.available_days = ["17/07/2024", "18/07/2024", "19/07/2024", "20/07/2024", "21/07/2024", "22/07/2024"]
 
     def handle_client(self, data, addr):
@@ -89,10 +89,10 @@ class Server:
     
     def list_my_reservations(self, addr):
         my_rsvs = []
-        for (owner, id, day), (guest_name, guest_addr) in self.reservations.items():
+        for (owner, id, day, location, name), (guest_name, guest_addr) in self.reservations.items():
             if guest_addr == addr:
                 owner_name = self.get_username_by_address(owner)
-                my_rsvs.append(f"[{owner_name}/{owner[0]}:{owner[1]}] Reservation: Accommodation ID {id} on {day}")
+                my_rsvs.append(f"[{owner_name}/{owner[0]}:{owner[1]}] Reservation: Accommodation ID {id}, {name} on {day} at {location}")
         response = "\n".join(my_rsvs) if my_rsvs else "You have no reservations."
         self.send_data(response.encode(), addr)
     
@@ -100,13 +100,15 @@ class Server:
         owner_addr = self.get_addr_by_username(owner_name)
         if owner_addr and (owner_addr, acmd_id, day) in self.reservations:
             self.send_data("Accommodation already booked for this day.".encode(), addr)
+        elif owner_addr == addr:
+            self.send_data("You can not reverse your own accommodation.".encode(), addr)
         else:
             if (owner_addr, acmd_id, day) not in self.reservations:
                 for (name, location), details in self.accommodations.items():
                     if details['id'] == int(acmd_id) and day in details['available_days']:
                         details['available_days'].remove(day)
                         details['reservations'][day] = addr
-                        self.reservations[(owner_addr, acmd_id, day)] = (self.get_username_by_address(addr), addr)
+                        self.reservations[(owner_addr, acmd_id, day, location, name)] = (self.get_username_by_address(addr), addr)
                         self.send_data(f"Booking successful for {name} on {day}.".encode(), addr)
                         self.notify_owner(owner_addr, f"[{self.get_username_by_address(addr)}/{addr[0]}:{addr[1]}] Reservation for {name} on {day}", subject="reservation")
                         return
@@ -164,10 +166,9 @@ Available commands:
         sender.send(data)  # Use send method from RDT_Sender
 
     def run(self):
-        print("Accommodation server started. Waiting for connections...")
+        print('\x1b[1;37;40m' + "Accommodation server started. Waiting for connections..." + "\x1b[37m")
         while True:
             data, target_address = self.server_socket.recvfrom(MAX_BUFF_SIZE)
-            print(data, "enviado do cliente")
             Thread(target=self.handle_client, args=(data, target_address)).start()
 
 if __name__ == "__main__":

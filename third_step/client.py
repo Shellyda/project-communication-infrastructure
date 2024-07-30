@@ -21,11 +21,10 @@ class Client:
         while True:
             message = self.receiver.receive() 
             
-            print(message)
+            print(f"\n{message}\n")
             
             if message.startswith("Login successful"):
                 self.username = message.split()[-1]
-                print(self.username, "teste")
                 self.login_event.set() 
             elif message.startswith("Username already in use"):
                 self.login_event.set()
@@ -63,13 +62,17 @@ class Client:
         Thread(target=self.receive_message).start()
         while True:
             if self.username is None:
-                command = input("Enter your username to login: ")
+                command = input('\x1b[1;37;40m' + "Enter your username to login: " + "\x1b[37m")
                 self.login_event.clear()  
+                print('Loading your request...')
                 self.login(command)
                 self.login_event.wait() 
             else:
                 print('Use --help to see available commands')
                 command = input(f"{self.username}@client:~$ ")
+                
+                print('\nLoading your request...\n')
+
                 if command.startswith("login"):
                     print("You are already logged in.")
                 elif command.startswith("logout"):
@@ -92,7 +95,7 @@ class Client:
                 elif command.startswith("--help"):
                     self.show_help()
                 else:
-                    print('Command not valid! Use --help to see available commands.')
+                    print('\x1b[1;31;40m' + '\nCommand not valid! Use --help to see available commands.\n' + "\x1b[37m")
                     self.send_message(command)
 
 if __name__ == "__main__":
