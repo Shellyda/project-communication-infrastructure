@@ -44,13 +44,13 @@ class Server:
         else:
             self.clients[username] = addr
             self.send_data(f"Login successful {username}".encode(), addr)
-            print(f'User [{username}/{addr[0]}:{addr[1]}] is connected!')
+            print('\x1b[1;37;93m' + f'User [{username}/{addr[0]}:{addr[1]}] is connected!' + '\x1b[37m')
     
     def logout(self, addr):
         username = self.get_username_by_address(addr)
         if username in self.clients:
             del self.clients[username]
-            print(f'User [{username}/{addr[0]}:{addr[1]}] disconnected!')
+            print( '\x1b[1;31;40m' + f'User [{username}/{addr[0]}:{addr[1]}] disconnected!' + '\x1b[37m')
 
     
     def create_accommodation(self, name, location, addr):
@@ -139,17 +139,17 @@ class Server:
     
     def show_help(self, addr):
         help_message = """
-Available commands:
-- login <username>: Log in with a username
-- logout: Log out
-- create <name> <location>: Create a new accommodation
-- list:myacmd: List your accommodations
-- list:acmd: List all available accommodations
-- list:myrsv: List your reservations
-- book <owner> <id> <day>: Book an accommodation
-- cancel <owner> <id> <day>: Cancel a reservation
-- --help: Display this help message
-"""
+        Available commands:
+        - login <username>: Log in with a username
+        - logout: Log out
+        - create <name> <location>: Create a new accommodation
+        - list:myacmd: List your accommodations
+        - list:acmd: List all available accommodations
+        - list:myrsv: List your reservations
+        - book <owner> <id> <day>: Book an accommodation
+        - cancel <owner> <id> <day>: Cancel a reservation
+        - --help: Display this help message
+        """
         self.send_data(help_message.encode(), addr)
     
     def get_username_by_address(self, addr):
@@ -166,7 +166,7 @@ Available commands:
         sender.send(data)  # Use send method from RDT_Sender
 
     def run(self):
-        print('\x1b[1;37;40m' + "Accommodation server started. Waiting for connections..." + "\x1b[37m")
+        print('\x1b[1;37;40m' + "Accommodation server started. Waiting for connections..." + '\x1b[37m')
         while True:
             data, target_address = self.server_socket.recvfrom(MAX_BUFF_SIZE)
             Thread(target=self.handle_client, args=(data, target_address)).start()
