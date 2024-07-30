@@ -15,7 +15,7 @@ This project involves implementing an accommodation reservation system using a c
 - `RDT_Receiver`: Ensures reliable data reception.
 - `RDT_Sender`: Ensures reliable data transmission.
 
-### 1. Environment Properties
+### Environment Properties
 The `env_props.py` file contains the following configured variables:
 
  ```python
@@ -23,7 +23,7 @@ The `env_props.py` file contains the following configured variables:
    MAX_BUFF_SIZE = 1024  # Buffer size in bytes
  ```
 
-### 2. Client
+### Client
 The client manages user interactions and communicates with the server to perform various operations.
 
 #### Features
@@ -45,7 +45,7 @@ The client manages user interactions and communicates with the server to perform
 - `logout`: Log out of the system.
 - `--help`: Display help message.
 
-### 3. Server
+### Server
 The server handles client requests, manages accommodations, and reservations.
 
 #### Features
@@ -56,7 +56,7 @@ The server handles client requests, manages accommodations, and reservations.
 #### Usage
 The server runs continuously, awaiting client requests.
 
-### 4. Reliable Data Transfer (RDT) Protocol
+### Reliable Data Transfer (RDT) Protocol
 The RDT protocol ensures reliable communication between the client and server, handling potential data loss and ensuring message integrity.
 
 #### RDT_Receiver
