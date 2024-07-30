@@ -118,19 +118,19 @@ finn_the_human@client:~$ list:acmd
 #### 4. Book Accommodation:
 ##### In other terminal run the Client and follow below instructions:
 ```python
-Enter your username to login: jake_the_dog
-jake_the_dog@client:~$ book finn_the_human 1 17/07/2024
+Enter your username to login: jake_the_dog # 1. Login with your username
+jake_the_dog@client:~$ book finn_the_human 1 17/07/2024 # 2. book <owner> <id> <day>
 ```
 - Output at Server terminal: `User [jake_the_dog/127.0.0.1:52278] is connected!`
 - Output for user jake_the_dog: `Booking successful for BeachHouse on 17/07/2024.`
-- Output for user finn_the_human: `[jake_the_dog/127.0.0.1:52278] Reservation for BeachHouse on 17/07/2024`
+- Output for owner finn_the_human: `[jake_the_dog/127.0.0.1:52278] Reservation for BeachHouse on 17/07/2024`
 
 #### 5. Cancel Reservation:
 ```python
 jake_the_dog@client:~$ cancel finn_the_human 1 17/07/2024
 ```
 - Output for user jake_the_dog: `Reservation cancelled successfully.`
-- Output for user finn_the_human: `[jake_the_dog/127.0.0.1:52278] Cancellation for BeachHouse on 17/07/2024`
+- Output for owner finn_the_human: `[jake_the_dog/127.0.0.1:52278] Cancellation for BeachHouse on 17/07/2024`
 - Output for all other users connected: `[finn_the_human/127.0.0.1:61374] New availability for BeachHouse in Hawaii on 17/07/2024`
 
 #### 6. Logout 
