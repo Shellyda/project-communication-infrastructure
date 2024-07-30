@@ -107,13 +107,13 @@ Enter your username to login: finn_the_human
 finn_the_human@client:~$ create BeachHouse Hawaii
 ```
 - Output: `Accommodation BeachHouse created successfully!`
-- Output for all users connected: `[finn_the_human/127.0.0.1:61374] New accommodation BeachHouse in Hawaii created!`
+- Output for all other users connected: `[finn_the_human/127.0.0.1:61374] New accommodation BeachHouse in Hawaii created!`
 
 #### 3. List Accommodations:
 ```python
 finn_the_human@client:~$ list:acmd
 ```
-- Output: `ID 1: BeachHouse in Hawaii - Available: ["17/07/2024", ...,"22/07/2024"] - Owner: finn_the_human`
+- Output: `ID 1: BeachHouse in Hawaii - Available: ["17/07/2024",...,"22/07/2024"] - Owner: finn_the_human`
 
 #### 4. Book Accommodation:
 ##### In other terminal run the Client and follow below instructions:
