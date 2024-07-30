@@ -164,17 +164,17 @@ class Server:
     def show_help(self, addr):
         # Send a help message with the list of available commands
         help_message = """
-        Available commands:
-        - login <username>: Log in with a username
-        - logout: Log out
-        - create <name> <location>: Create a new accommodation
-        - list:myacmd: List your accommodations
-        - list:acmd: List all available accommodations
-        - list:myrsv: List your reservations
-        - book <owner> <id> <day>: Book an accommodation
-        - cancel <owner> <id> <day>: Cancel a reservation
-        - --help: Display this help message
-        """
+Available commands:
+- login <username>: Log in with a username
+- logout: Log out
+- create <name> <location>: Create a new accommodation
+- list:myacmd: List your accommodations
+- list:acmd: List all available accommodations
+- list:myrsv: List your reservations
+- book <owner> <id> <day>: Book an accommodation
+- cancel <owner> <id> <day>: Cancel a reservation
+- --help: Display this help message
+"""
         self.send_data(help_message.encode(), addr)
     
     def get_username_by_address(self, addr):
