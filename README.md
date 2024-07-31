@@ -1,8 +1,16 @@
-# Project | Communication Infrastructure
+# Communication Infrastructure Project
 
-This project is part of the Communication Infrastructure course for the first semester of 2024 at CIn/UFPE. It is divided into three main phases, each building upon the previous one. The project explores various aspects of network communication, focusing on UDP and the RDT 3.0 protocol. 
+This project is part of the Communication Infrastructure course at CIn/UFPE. It is divided into three main phases, each building upon the previous one. The project explores various aspects of network communication, focusing on UDP and the RDT 3.0 protocol. 
+![image](https://github.com/user-attachments/assets/ab9f0ccd-12b4-47d6-b0a8-27f32b472d35)
 
-## Phase 1: File Transmission with UDP
+### Table of Contents
+- [Phase 1: File Transmission with UDP](#phase-1-file-transmission-with-udp)
+- [Phase 2: Reliable Data Transfer with RDT 3.0](#phase-2-reliable-data-transfer-with-rdt-30)
+- [Phase 3: Accommodation Reservation System](#phase-3-accommodation-reservation-system)
+- [Installation and Setup](#installation-and-setup)
+- [Contributing](#contributing)
+
+### Phase 1: File Transmission with UDP
 
 - **Objective**: Implement file transmission using UDP in Python.
 - **Details**: 
@@ -10,7 +18,7 @@ This project is part of the Communication Infrastructure course for the first se
   - Files are sent from the client, stored on the server, and returned to the client.
   - Implement packet fragmentation for files larger than 1024 bytes and ensure reassembly at the receiver.
 
-## Phase 2: Reliable Data Transfer with RDT 3.0
+### Phase 2: Reliable Data Transfer with RDT 3.0
 
 - **Objective**: Implement a basic reliable data transfer protocol using RDT 3.0 over UDP.
 - **Details**: 
@@ -18,7 +26,7 @@ This project is part of the Communication Infrastructure course for the first se
   - Simulate random packet loss and timeouts to demonstrate the protocol's reliability.
   - Display each step of the algorithm execution in the command line for better understanding.
 
-## Phase 3: Accommodation Reservation System
+### Phase 3: Accommodation Reservation System
 
 - **Objective**: Develop a client-server system for managing accommodation bookings using the concepts from previous phases.
 - **Details**: 
@@ -27,7 +35,7 @@ This project is part of the Communication Infrastructure course for the first se
   - Incorporate the RDT 3.0 protocol for reliable communication.
   - Deliver a video demonstration explaining the code and showing the system in action.
 
-## Installation and Setup
+### Installation and Setup
 
 1. **Clone the repository**:
     ```bash
@@ -41,7 +49,7 @@ This project is part of the Communication Infrastructure course for the first se
 3. **Instructions**:
     Each phase has its own folder with the necessary code and a detailed README with execution instructions and additional notes.
 
-## Contributing
+### Contributing
 
 1. Fork the repository.
 2. Create a new branch (`git checkout -b feature-branch`).
