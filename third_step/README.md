@@ -8,12 +8,16 @@ This project involves implementing an accommodation reservation system using a c
 - [Structure](#structure)
 - [Running the System](#running-the-system)
 - [Example Interaction](#example-interaction)
+- [Conclusion](#conclusion)
+- [Contributors](#contributors)
 
 ## Structure
 - `Client`: Handles user input and communication with the server.
 - `Server`: Manages accommodations, reservations, and user sessions.
 - `RDT_Receiver`: Ensures reliable data reception.
 - `RDT_Sender`: Ensures reliable data transmission.
+
+_______
 
 ### Environment Properties
 The `env_props.py` file contains the following configured variables:
@@ -22,6 +26,7 @@ The `env_props.py` file contains the following configured variables:
    SERVER_ADDRESS = ('localhost', 6060)  # Example server configuration
    MAX_BUFF_SIZE = 1024  # Buffer size in bytes
  ```
+_______
 
 ### Client
 The client manages user interactions and communicates with the server to perform various operations.
@@ -44,6 +49,7 @@ The client manages user interactions and communicates with the server to perform
 - `cancel <owner> <id> <day>`: Cancel a reservation.
 - `logout`: Log out of the system.
 - `--help`: Display help message.
+_______
 
 ### Server
 The server handles client requests, manages accommodations, and reservations.
@@ -55,6 +61,7 @@ The server handles client requests, manages accommodations, and reservations.
 
 #### Usage
 The server runs continuously, awaiting client requests.
+_______
 
 ### Reliable Data Transfer (RDT) Protocol
 The RDT protocol ensures reliable communication between the client and server, handling potential data loss and ensuring message integrity.
