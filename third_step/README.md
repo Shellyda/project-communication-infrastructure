@@ -147,7 +147,7 @@ jake_the_dog@client:~$ logout
 - Output at Server terminal: `User [jake_the_dog/127.0.0.1:52278] disconnected!`
 
 ### Conclusion
-Working on this project was a great experience as it allowed us to practice Object-Oriented Programming (OOP) principles and apply clean code practices. Implementing the RDT 3.0 protocol and developing a functional client-server application provided valuable hands-on experience. We are grateful for the feedback from the InfraCom monitors on our code and documentation throughout the project, which helped us improve and ensure the quality of our work.
+Working on this project was a great experience as it allowed us to practice Object-Oriented Programming (OOP) principles and apply clean code practices. Implementing the RDT 3.0 protocol and developing a functional client-server application provided valuable hands-on experience. We are grateful for the feedback from the course mentors on our code and documentation throughout the project, which helped us improve and ensure the quality of our work.
 
 ## Contributors
 - Lucas Torres - ljat@cin.ufpe.br
