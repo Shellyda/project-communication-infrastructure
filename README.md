@@ -1,6 +1,6 @@
 # Project | Communication Infrastructure
 
-This project is part of the Communication Infrastructure course for the first semester of 2024. It is divided into three main phases, each building upon the previous one. The project explores various aspects of network communication, focusing on UDP and the RDT 3.0 protocol. 
+This project is part of the Communication Infrastructure course for the first semester of 2024 at CIn/UFPE. It is divided into three main phases, each building upon the previous one. The project explores various aspects of network communication, focusing on UDP and the RDT 3.0 protocol. 
 
 ## Phase 1: File Transmission with UDP
 
